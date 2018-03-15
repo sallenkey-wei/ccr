@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     camera.cpp \
     log.cpp \
     mymessagebox.cpp \
-    transactionthread.cpp
+    transactionthread.cpp \
+    processmgmt.cpp
 
 HEADERS  += mainwindow.h \
     camera.h \
@@ -27,7 +28,8 @@ HEADERS  += mainwindow.h \
     common.h \
     log.h \
     mymessagebox.h \
-    transactionthread.h
+    transactionthread.h \
+    processmgmt.h
 
 RESOURCES += \
     res.qrc

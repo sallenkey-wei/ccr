@@ -7,6 +7,7 @@
 #include "common.h"
 #include <QLoggingCategory>
 #include <QMessageLogger>
+#include "processmgmt.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -19,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     stack1OpenUi(new Ui::WidgetForOpenSource),
     widgetForSaveSource(new QWidget(this)),
     stack1SaveUi(new Ui::WidgetForSaveSource),
-    timer(new QTimer)
+    timer(new QTimer),
+    processMgmt(new ProcessMgmt(this))
 {
     ui->setupUi(this);
     stack2OpenUi->setupUi(groupBoxForLocation);
@@ -38,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->saveResultLineEdit->setFocusPolicy(Qt::NoFocus);
     stack1SaveUi->saveSourceLineEdit->setFocusPolicy(Qt::NoFocus);
     stack1OpenUi->openSourceLineEdit->setFocusPolicy(Qt::NoFocus);
+    this->processMgmt->startProcess();
 }
 
 MainWindow::~MainWindow()

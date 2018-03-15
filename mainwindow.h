@@ -1,4 +1,4 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
@@ -14,6 +14,7 @@ class QCheckBox;
 class QPushButton;
 class QProgressBar;
 class QGroupBox;
+class ProcessMgmt;
 
 namespace Ui {
 class MainWindow;
@@ -92,6 +93,7 @@ private:
 
     QSize size;
     TransactionThread thread;
+    ProcessMgmt * processMgmt;
 
 private:
     void setUpStackedLayout();
