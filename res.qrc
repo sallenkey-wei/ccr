@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/new/icon">
+        <file>images/conf.ico</file>
+        <file>images/exit.ico</file>
+        <file>images/ltv.ico</file>
+        <file>images/rtv.ico</file>
+    </qresource>
+</RCC>
