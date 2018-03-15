@@ -102,8 +102,8 @@ void ProcessMgmt::startProcess()
     {
         qCritical() << proAlexNetPath + " start failed!";
         myMessageBox(static_cast<QWidget *>(this->parent()), QMessageBox::Critical, QStringLiteral("错误"), \
-                     proAlexNetPath.append(QStringLiteral(" 启动失败!")), QStringLiteral("请检查该服务路径是否正确并重启程序"));
-        exit(0);
+                     proAlexNetPath + QStringLiteral(" 启动失败!"), QStringLiteral("请检查该服务路径是否正确并重启程序"));
+
     }
 
 }
@@ -112,7 +112,7 @@ void ProcessMgmt::errorHandler(QProcess::ProcessError error)
     //std::cout << error << static_cast<QProcess *>(sender())->errorString().toStdString() <<std::endl;
 std::cout << "in errorHandle " << std::endl;
      myMessageBox(static_cast<QWidget *>(this->parent()), QMessageBox::Critical, QStringLiteral("错误"), \
-                     proAlexNetPath +QStringLiteral(" 启动失败!"), QStringLiteral("请检查该服务路径是否正确并重启程序"));
+                     proAlexNetPath + QStringLiteral(" 启动失败!"), QStringLiteral("请检查该服务路径是否正确并重启程序"));
 }
 
 void ProcessMgmt::closeAllProcess()
