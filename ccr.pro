@@ -39,7 +39,7 @@ FORMS += \
     widgetforopensource.ui \
     widgetforsavesource.ui
 
-win32: LIBS += -L$$PWD/lib/ -lcontainer_select_dll
+#win32: LIBS += -L$$PWD/lib/ -lcontainer_select_dll
 
 INCLUDEPATH += $$PWD/include
 DEPENDPATH += $$PWD/include

@@ -4,6 +4,9 @@
 /release/
 /x64/
 /.vs/
+/build-ccr-Desktop_Qt_5_6_2_MSVC2015_64bit-Debug/
+/build-ccr-Desktop_Qt_5_6_2_MSVC2015_64bit-Release/
+/build-ccr-Desktop_Qt_5_6_2_MSVC2015_64bit-Profile/
 .qmake.stash
 ccr.pro.user
 ccr.sdf
