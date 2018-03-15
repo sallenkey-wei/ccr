@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QProcess>
+#include <time.h>
 
 
 class ProcessMgmt : public QObject
@@ -18,11 +19,14 @@ public:
 signals:
 
 public slots:
-    //void restartProcess(QProcess::ProcessState newState);
+    void restartProcess(QProcess::ProcessState newState);
     void closeAllProcess();
     void startProcess();
     void errorHandler(QProcess::ProcessError);
     void finishHandler(int, QProcess::ExitStatus);
+private:
+   time_t currentTime;
+   int crashTimes = 0;
 };
 
 #endif // PROCESSMGMT_H
