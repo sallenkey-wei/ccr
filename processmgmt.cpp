@@ -23,13 +23,18 @@ ProcessMgmt::ProcessMgmt(QObject *parent) : QObject(parent), currentTime(time(NU
     connect(proCTPN, &QProcess::stateChanged, this, &ProcessMgmt::restartProcess);
     connect(proDeepLab, &QProcess::stateChanged, this, &ProcessMgmt::restartProcess);
     connect(proEAST, &QProcess::stateChanged, this, &ProcessMgmt::restartProcess);
-#endif
 
     connect(proAlexNet, &QProcess::errorOccurred, this, &ProcessMgmt::errorHandler);
+#endif
 
 #if 1
     connect(proAlexNet, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
 #endif
+}
+
+ProcessMgmt::~ProcessMgmt()
+{
+
 }
 
 #if 1//为什么不行呢
@@ -65,6 +70,10 @@ void ProcessMgmt::finishHandler(int exitCode, QProcess::ExitStatus exitStatus)
     if(time(NULL)-currentTime <= 1)
     {
        crashTimes++;
+    }
+    else
+    {
+        crashTimes = 0;
     }
     if(crashTimes > 10)
     {
@@ -102,11 +111,11 @@ void ProcessMgmt::startProcess()
     {
         qCritical() << proAlexNetPath + " start failed!";
         myMessageBox(static_cast<QWidget *>(this->parent()), QMessageBox::Critical, QStringLiteral("错误"), \
-                     proAlexNetPath + QStringLiteral(" 启动失败!"), QStringLiteral("请检查该服务路径是否正确并重启程序"));
-
+                     proAlexNetPath + QStringLiteral(" 启动失败!"), QStringLiteral("请检查该服务路径是否正确并重启程序和是否安装python环境！"));
     }
 
 }
+
 void ProcessMgmt::errorHandler(QProcess::ProcessError error)
 {
     //std::cout << error << static_cast<QProcess *>(sender())->errorString().toStdString() <<std::endl;

@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     log.cpp \
     mymessagebox.cpp \
     transactionthread.cpp \
-    processmgmt.cpp
+    processmgmt.cpp \
+    daemon.cpp
 
 HEADERS  += mainwindow.h \
     camera.h \
@@ -29,7 +30,8 @@ HEADERS  += mainwindow.h \
     log.h \
     mymessagebox.h \
     transactionthread.h \
-    processmgmt.h
+    processmgmt.h \
+    daemon.h
 
 RESOURCES += \
     res.qrc

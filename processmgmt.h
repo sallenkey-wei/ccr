@@ -11,6 +11,7 @@ class ProcessMgmt : public QObject
     Q_OBJECT
 public:
     explicit ProcessMgmt(QObject *parent = 0);
+    ~ProcessMgmt();
     QProcess * proAlexNet;
     QProcess * proCRNN;
     QProcess * proCTPN;
