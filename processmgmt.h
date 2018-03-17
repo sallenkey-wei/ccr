@@ -17,7 +17,14 @@ public:
     QProcess * proCTPN;
     QProcess * proDeepLab;
     QProcess * proEAST;
+    QString proAlexNetPath;
+    QString proCRNNPath;
+    QString proCTPNPath;
+    QString proDeepLabPath;
+    QString proEASTPath;
 signals:
+    void proCrash(QString &);
+    void proRecover();
 
 public slots:
     void restartProcess(QProcess::ProcessState newState);

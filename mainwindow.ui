@@ -321,6 +321,9 @@ border:4px solid rgb(255, 255, 255)</string>
    <addaction name="toolLtv"/>
    <addaction name="toolConf"/>
    <addaction name="toolExit"/>
+   <addaction name="actionTurnOn"/>
+   <addaction name="actionTurnOff"/>
+   <addaction name="ledPlay"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionRtv">
@@ -399,6 +402,31 @@ border:4px solid rgb(255, 255, 255)</string>
    </property>
    <property name="text">
     <string>退    出</string>
+   </property>
+  </action>
+  <action name="actionTurnOn">
+   <property name="text">
+    <string>开启服务</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;开启python本地服务&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionTurnOff">
+   <property name="text">
+    <string>关闭服务</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;关闭python本地服务&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="ledPlay">
+   <property name="icon">
+    <iconset resource="res.qrc">
+     <normaloff>:/new/icon/images/green.ico</normaloff>:/new/icon/images/green.ico</iconset>
+   </property>
+   <property name="text">
+    <string>服务状态</string>
    </property>
   </action>
  </widget>

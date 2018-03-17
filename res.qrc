@@ -4,5 +4,7 @@
         <file>images/exit.ico</file>
         <file>images/ltv.ico</file>
         <file>images/rtv.ico</file>
+        <file>images/green.ico</file>
+        <file>images/red.ico</file>
     </qresource>
 </RCC>

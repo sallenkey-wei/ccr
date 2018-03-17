@@ -21,7 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
     widgetForSaveSource(new QWidget(this)),
     stack1SaveUi(new Ui::WidgetForSaveSource),
     timer(new QTimer),
-    processMgmt(new ProcessMgmt(this))
+    processMgmt(new ProcessMgmt(this)),
+    configDialog(new ConfigDialog(this))
 {
     ui->setupUi(this);
     stack2OpenUi->setupUi(groupBoxForLocation);
@@ -40,7 +41,20 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->saveResultLineEdit->setFocusPolicy(Qt::NoFocus);
     stack1SaveUi->saveSourceLineEdit->setFocusPolicy(Qt::NoFocus);
     stack1OpenUi->openSourceLineEdit->setFocusPolicy(Qt::NoFocus);
-    this->processMgmt->startProcess();
+
+
+
+
+
+    configDialog->proAlexNetPath = processMgmt->proAlexNetPath;
+    configDialog->proCRNNPath= processMgmt->proCRNNPath;
+    configDialog->proCTPNPath = processMgmt->proCTPNPath;
+    configDialog->proDeepLabPath = processMgmt->proDeepLabPath;
+    configDialog->proEASTPath = processMgmt->proEASTPath;
+
+    connect(this->processMgmt, &ProcessMgmt::proCrash, this, &MainWindow::crashHandle);
+    connect(this->processMgmt, &ProcessMgmt::proRecover, this, &MainWindow::recoverHandle);
+
 }
 
 MainWindow::~MainWindow()
@@ -224,6 +238,7 @@ bool MainWindow::saveSourceFileSlot()
 
 bool MainWindow::configSlot()
 {
+    this->configDialog->exec();
     return true;
 }
 
@@ -429,6 +444,11 @@ void MainWindow::readSetting()
     qCInfo(QLoggingCategory("custom")) << QString("fileDialogPath is %1.").arg(fileDialogPath);
     saveSource = settings.value("saveSource", false).toBool();
     saveResult = settings.value("saveResult", false).toBool();
+    processMgmt->proAlexNetPath = settings.value("proAlexNetPath", "").toString();
+    processMgmt->proCRNNPath = settings.value("proCRNNPath", "").toString();
+    processMgmt->proCTPNPath = settings.value("proCTPNPath", "").toString();
+    processMgmt->proDeepLabPath = settings.value("proDeepLabPath", "").toString();
+    processMgmt->proEASTPath = settings.value("proEASTPath", "").toString();
 
 }
 
@@ -440,4 +460,40 @@ void MainWindow::writeSetting()
     settings.setValue("saveSource", saveSource);
     settings.setValue("saveResult", saveResult);
 
+}
+
+void MainWindow::on_actionTurnOn_triggered()
+{
+    processMgmt->proAlexNetPath = configDialog->proAlexNetPath;
+    processMgmt->proCRNNPath = configDialog->proCRNNPath;
+    processMgmt->proCTPNPath = configDialog->proCTPNPath;
+    processMgmt->proDeepLabPath = configDialog->proDeepLabPath;
+    processMgmt->proEASTPath = configDialog->proEASTPath;
+
+    if(processMgmt->proAlexNetPath.isEmpty() || processMgmt->proCRNNPath.isEmpty() || processMgmt->proCTPNPath.isEmpty() \
+            || processMgmt->proDeepLabPath.isEmpty() || processMgmt->proEASTPath.isEmpty())
+    {
+            myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告"), QStringLiteral("本地服务路径为空！"));
+            return;
+
+    }
+
+    processMgmt->startProcess();
+}
+
+void MainWindow::on_actionTurnOff_triggered()
+{
+    processMgmt->closeAllProcess();
+}
+
+void MainWindow::crashHandle(QString& message)
+{
+    QIcon icon("./images/red.ico");
+    ui->ledPlay->setIcon(icon);
+}
+
+void MainWindow::recoverHandle()
+{
+    QIcon icon("./images/green.ico");
+    ui->ledPlay->setIcon(icon);
 }

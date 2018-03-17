@@ -5,6 +5,7 @@
 #include <QSize>
 #include "transactionthread.h"
 #include "camera.h"
+#include "configdialog.h"
 
 class QTimer;
 class QStackedLayout;
@@ -33,6 +34,14 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void initPixmapLabelSize();
+
+    ProcessMgmt * processMgmt;
+    ConfigDialog * configDialog;
+    void crashHandle(QString&);
+    void recoverHandle();
+
+
+
 private slots:
     bool serverConnectSlot();
     bool openSourceFileSlot();
@@ -53,6 +62,10 @@ private slots:
     void saveResultCheckBoxSlot(int);
     void updatePixmap();
     void allTransactionDone(QString);
+
+    void on_actionTurnOn_triggered();
+
+    void on_actionTurnOff_triggered();
 
 signals:
     void switchWidgeted(int);
@@ -93,7 +106,6 @@ private:
 
     QSize size;
     TransactionThread thread;
-    ProcessMgmt * processMgmt;
 
 private:
     void setUpStackedLayout();

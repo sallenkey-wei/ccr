@@ -1,8 +1,9 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "log.h"
 #include <QApplication>
 #include <QSize>
+#include "configdialog.h"
 
 void outputMessage(QtMsgType, const QMessageLogContext &, const QString &);
 

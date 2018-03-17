@@ -21,7 +21,7 @@ SOURCES += main.cpp\
     mymessagebox.cpp \
     transactionthread.cpp \
     processmgmt.cpp \
-    daemon.cpp
+    configdialog.cpp
 
 HEADERS  += mainwindow.h \
     camera.h \
@@ -31,7 +31,7 @@ HEADERS  += mainwindow.h \
     mymessagebox.h \
     transactionthread.h \
     processmgmt.h \
-    daemon.h
+    configdialog.h
 
 RESOURCES += \
     res.qrc
@@ -41,7 +41,9 @@ FORMS += \
     groupboxforonline.ui \
     mainwindow.ui \
     widgetforopensource.ui \
-    widgetforsavesource.ui
+    widgetforsavesource.ui \
+    configwidget.ui \
+    configdialog.ui
 
 #win32: LIBS += -L$$PWD/lib/ -lcontainer_select_dll
 
