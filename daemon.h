@@ -12,12 +12,19 @@ class Daemon : public QObject
 {
     Q_OBJECT
 public:
-    explicit Daemon(QStringList &, QObject *parent = 0);
+    explicit Daemon(const QStringList &, QObject *parent = 0);
+    ~Daemon();
 
 signals:
     void restartFailed(QString&);
+    void noPythonEnv();
+    void closeFailed(QString&);
 
 public slots:
+    void startAllPro();
+    void closeAllPro();
+    QStringList proPaths();
+    bool setProPaths(const QStringList &);
 
 private:
     QMap<QProcess *, QString, int *> proMap;
