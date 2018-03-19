@@ -31,7 +31,7 @@ int ConfigDialog::exec()
 
 void ConfigDialog::on_aLexNetPB_clicked()
 {
-    QString tempPath = QFileDialog::getOpenFileName(this, QStringLiteral("打开"), proAlexNetPath,tr("py(*.py)"));
+    QString tempPath = QFileDialog::getOpenFileName(this, QStringLiteral("打开"), proAlexNetPath,tr("py(*.py);;All(*.*)"));
     if(!tempPath.isEmpty())
     {
         this->proAlexNetPath = tempPath;

@@ -421,10 +421,6 @@ border:4px solid rgb(255, 255, 255)</string>
    </property>
   </action>
   <action name="ledPlay">
-   <property name="icon">
-    <iconset resource="res.qrc">
-     <normaloff>:/new/icon/images/green.ico</normaloff>:/new/icon/images/green.ico</iconset>
-   </property>
    <property name="text">
     <string>服务状态</string>
    </property>

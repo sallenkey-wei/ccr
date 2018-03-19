@@ -32,6 +32,7 @@ public slots:
     void startProcess();
     void errorHandler(QProcess::ProcessError);
     void finishHandler(int, QProcess::ExitStatus);
+    void output();
 private:
    time_t currentTime;
    int crashTimes = 0;

@@ -42,7 +42,6 @@ FORMS += \
     mainwindow.ui \
     widgetforopensource.ui \
     widgetforsavesource.ui \
-    configwidget.ui \
     configdialog.ui
 
 #win32: LIBS += -L$$PWD/lib/ -lcontainer_select_dll

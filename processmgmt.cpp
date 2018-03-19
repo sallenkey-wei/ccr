@@ -3,6 +3,9 @@
 #include <QApplication>
 #include <QDebug>
 #include <iostream>
+#include <QFile>
+#include <QDir>
+#include <QStandardPaths>
 
 
 ProcessMgmt::ProcessMgmt(QObject *parent) : QObject(parent), currentTime(time(NULL))
@@ -29,6 +32,7 @@ ProcessMgmt::ProcessMgmt(QObject *parent) : QObject(parent), currentTime(time(NU
     connect(proDeepLab, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
     connect(proEAST, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
 #endif
+    connect(this->proAlexNet, &QProcess::readyReadStandardOutput, this, &ProcessMgmt::output);
 }
 
 ProcessMgmt::~ProcessMgmt()
@@ -67,7 +71,7 @@ std::cout << "in restart Process" << newState << std::endl;
 }
 #endif
 
-void ProcessMgmt::finishHandler(int exitCode, QProcess::ExitStatus exitStatus)
+void ProcessMgmt::finishHandler(int /*exitCode*/, QProcess::ExitStatus /*exitStatus*/)
 {
 //std::cout << "exit code: " << exitCode << "exitStatus: "  << exitStatus << std::endl;
     if(time(NULL)-currentTime <= 1)
@@ -81,9 +85,15 @@ void ProcessMgmt::finishHandler(int exitCode, QProcess::ExitStatus exitStatus)
     currentTime = time(NULL);
     if(crashTimes > 10)
     {
-        qCritical() << proAlexNetPath + " start failed!";
+        emit proCrash(QString("local server crash"));
+        disconnect(proAlexNet, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
+        disconnect(proCRNN, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
+        disconnect(proCTPN, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
+        disconnect(proDeepLab, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
+        disconnect(proEAST, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
+        qCritical() << "local server start failed!";
         myMessageBox(static_cast<QWidget *>(this->parent()), QMessageBox::Critical, QStringLiteral("错误"), \
-                     proAlexNetPath + (QStringLiteral(" 启动失败!")), QStringLiteral("请检查该服务路径是否正确并重启程序"));
+                      QStringLiteral("本地服务启动失败!"), QStringLiteral("请检查该服务路径是否正确并重启程序"));
         qApp->quit();
     }
     if(proAlexNet==sender())
@@ -121,6 +131,8 @@ void ProcessMgmt::startProcess()
     connect(proCTPN, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
     connect(proDeepLab, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
     connect(proEAST, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
+
+
     this->proAlexNet->start("python", QStringList() << proAlexNetPath);
 #if 1
     bool startSuccess;
@@ -134,13 +146,14 @@ void ProcessMgmt::startProcess()
     }
 #endif
     this->proCRNN->start("python", QStringList() << proCRNNPath);
-    this->proCTPN->start("python", QStringList() << proCTPNPath);
+    //this->proCTPN->start("python", QStringList() << proCTPNPath);
     this->proDeepLab->start("python", QStringList() << proDeepLabPath);
     this->proEAST->start("python", QStringList() << proEASTPath);
+    connect(proAlexNet, SIGNAL(readyReadStandardOutput()), this, SLOT(output()));
 
 }
 
-void ProcessMgmt::errorHandler(QProcess::ProcessError error)
+void ProcessMgmt::errorHandler(QProcess::ProcessError /*error*/)
 {
     //std::cout << error << static_cast<QProcess *>(sender())->errorString().toStdString() <<std::endl;
 std::cout << "in errorHandle " << std::endl;
@@ -160,5 +173,24 @@ void ProcessMgmt::closeAllProcess()
     this->proCTPN->close();
     this->proDeepLab->close();
     this->proEAST->close();
+
+}
+
+void ProcessMgmt::output()
+{
+
+    QString logDirectory  = QApplication::applicationDirPath() + "/Log/";
+    QDir dir(logDirectory);
+    if(!dir.exists())
+        dir.mkdir(logDirectory);
+    logDirectory.append("python_server.log");
+
+    QFile file(logDirectory);
+    file.open(QIODevice::WriteOnly | QIODevice::Append);
+
+    QTextStream textStream(&file);
+    textStream <<  proAlexNet->readAll();
+std::cout << proAlexNet->readAll().toStdString();
+    file.close();
 
 }

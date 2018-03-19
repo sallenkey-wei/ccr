@@ -54,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(this->processMgmt, &ProcessMgmt::proCrash, this, &MainWindow::crashHandle);
     connect(this->processMgmt, &ProcessMgmt::proRecover, this, &MainWindow::recoverHandle);
+    ui->ledPlay->setIcon(QIcon(":/new/icon/green"));
 
 }
 
@@ -486,7 +487,7 @@ void MainWindow::on_actionTurnOff_triggered()
     processMgmt->closeAllProcess();
 }
 
-void MainWindow::crashHandle(QString& message)
+void MainWindow::crashHandle(QString& /*message*/)
 {
     QIcon icon("./images/red.ico");
     ui->ledPlay->setIcon(icon);
