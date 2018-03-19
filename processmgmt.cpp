@@ -83,7 +83,7 @@ void ProcessMgmt::finishHandler(int /*exitCode*/, QProcess::ExitStatus /*exitSta
         crashTimes = 0;
     }
     currentTime = time(NULL);
-    if(crashTimes > 10)
+    if(crashTimes > 5)
     {
         emit proCrash(QString("local server crash"));
         disconnect(proAlexNet, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
@@ -132,9 +132,14 @@ void ProcessMgmt::startProcess()
     connect(proDeepLab, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
     connect(proEAST, static_cast<void(QProcess::*)(int , QProcess::ExitStatus)>(&QProcess::finished), this, &ProcessMgmt::finishHandler);
 
+    this->proAlexNet->setWorkingDirectory(QFileInfo(proAlexNetPath).path());
+    this->proCRNN->setWorkingDirectory(QFileInfo(proCRNNPath).path());
+    this->proCTPN->setWorkingDirectory(QFileInfo(proCTPNPath).path());
+    this->proDeepLab->setWorkingDirectory(QFileInfo(proDeepLabPath).path());
+    this->proEAST->setWorkingDirectory(QFileInfo(proEASTPath).path());
+
 
     this->proAlexNet->start("python", QStringList() << proAlexNetPath);
-#if 1
     bool startSuccess;
     startSuccess = proAlexNet->waitForStarted(30000);
     if(!startSuccess)
@@ -142,15 +147,15 @@ void ProcessMgmt::startProcess()
         qCritical() << proAlexNetPath + " start failed!";
         myMessageBox(static_cast<QWidget *>(this->parent()), QMessageBox::Critical, QStringLiteral("错误"), \
                      proAlexNetPath + QStringLiteral(" 启动失败!"), QStringLiteral("请检查该服务路径是否正确并重启程序和是否安装python环境！"));
-        qApp->quit();
+        //qApp->quit();
     }
-#endif
     this->proCRNN->start("python", QStringList() << proCRNNPath);
-    //this->proCTPN->start("python", QStringList() << proCTPNPath);
+    this->proCTPN->start("python", QStringList() << proCTPNPath);
     this->proDeepLab->start("python", QStringList() << proDeepLabPath);
     this->proEAST->start("python", QStringList() << proEASTPath);
-    connect(proAlexNet, SIGNAL(readyReadStandardOutput()), this, SLOT(output()));
 
+#if 1
+#endif
 }
 
 void ProcessMgmt::errorHandler(QProcess::ProcessError /*error*/)
