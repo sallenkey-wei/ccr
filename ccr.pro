@@ -20,8 +20,8 @@ SOURCES += main.cpp\
     log.cpp \
     mymessagebox.cpp \
     transactionthread.cpp \
-    processmgmt.cpp \
-    configdialog.cpp
+    daemon.cpp \
+    daemonthread.cpp
 
 HEADERS  += mainwindow.h \
     camera.h \
@@ -30,19 +30,19 @@ HEADERS  += mainwindow.h \
     log.h \
     mymessagebox.h \
     transactionthread.h \
-    processmgmt.h \
-    configdialog.h
+    daemon.h \
+    daemonthread.h
 
 RESOURCES += \
-    res.qrc
+    res.qrc \
+    resaction.qrc
 
 FORMS += \
     groupboxforlocation.ui \
     groupboxforonline.ui \
     mainwindow.ui \
     widgetforopensource.ui \
-    widgetforsavesource.ui \
-    configdialog.ui
+    widgetforsavesource.ui
 
 #win32: LIBS += -L$$PWD/lib/ -lcontainer_select_dll
 

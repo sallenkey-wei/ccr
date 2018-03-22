@@ -4,6 +4,7 @@
 #include <QApplication>
 #include <QSize>
 #include "configdialog.h"
+#include "daemon.h"
 
 void outputMessage(QtMsgType, const QMessageLogContext &, const QString &);
 
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
     //qDebug("hello");
     //qCDebug(category) << "hello";
 
-    logInit();
+    //logInit();
     MainWindow w;
     w.show();
     w.initPixmapLabelSize();

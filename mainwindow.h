@@ -6,6 +6,9 @@
 #include "transactionthread.h"
 #include "camera.h"
 #include "configdialog.h"
+#include <QStringList>
+#include <QMap>
+#include <QString>
 
 class QTimer;
 class QStackedLayout;
@@ -15,7 +18,10 @@ class QCheckBox;
 class QPushButton;
 class QProgressBar;
 class QGroupBox;
-class ProcessMgmt;
+
+class DaemonThread;
+class QPlainTextEdit;
+class QLabel;
 
 namespace Ui {
 class MainWindow;
@@ -35,10 +41,31 @@ public:
     ~MainWindow();
     void initPixmapLabelSize();
 
-    ProcessMgmt * processMgmt;
-    ConfigDialog * configDialog;
-    void crashHandle(QString&);
-    void recoverHandle();
+private:
+    typedef struct
+    {
+        QPlainTextEdit * text;
+        QLabel * green;
+        QLabel * red;
+        QLineEdit * path;
+    }Comb;
+    DaemonThread * daemonThread;
+    QStringList proPathsList;
+    QMap<QPushButton *, Comb * > mapComb;/*daemon发射的信号(传递一个QString类型)所对应的槽函数要操作的界面组件，做成一个联合，
+                                        mapComb[mapPaths[QString类型]].text.setxxx()*/
+    QMap<QString, QPushButton *> mapPaths;/*路径和设置路径的按键指针之间的映射表*/
+    QList<QPushButton *> listPaths;/*路径顺序表*/
+    void initMap();
+private slots:
+    void lServerPBSlot();
+    void startDaemon();
+    void endDaemon();
+    void daemonRstFailedHandler(QString );
+    void daeNoPyHandler();
+    void outToTE(QString , QString );
+    void certainProStart(QString);
+    void certainProPause(QString);
+
 
 
 
@@ -50,7 +77,6 @@ private slots:
     bool saveSourceFileSlot();
     bool saveResultFileSlot();
     bool configSlot();
-    void switchWidgetSlot(int);
     void beginButtonClickSlot();
     void pauseButtonClickSlot();
     void endButtonClickSlot();
@@ -63,12 +89,7 @@ private slots:
     void updatePixmap();
     void allTransactionDone(QString);
 
-    void on_actionTurnOn_triggered();
-
-    void on_actionTurnOff_triggered();
-
-signals:
-    void switchWidgeted(int);
+    void on_clearPathsPB_clicked();
 
 private:
     Ui::MainWindow *ui;

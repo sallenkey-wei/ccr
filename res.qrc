@@ -1,10 +1,7 @@
 <RCC>
     <qresource prefix="/new/icon">
-        <file>images/conf.ico</file>
-        <file>images/exit.ico</file>
-        <file>images/ltv.ico</file>
-        <file>images/rtv.ico</file>
-        <file alias="green">images/green.ico</file>
-        <file alias="red">images/red.ico</file>
+        <file>images/gray.png</file>
+        <file>images/green.png</file>
+        <file>images/red.png</file>
     </qresource>
 </RCC>

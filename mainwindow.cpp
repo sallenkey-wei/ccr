@@ -7,7 +7,12 @@
 #include "common.h"
 #include <QLoggingCategory>
 #include <QMessageLogger>
-#include "processmgmt.h"
+#include "daemonthread.h"
+#include "daemon.h"
+#include <iterator>
+#include <map>
+#include <algorithm>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,9 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     stack1OpenUi(new Ui::WidgetForOpenSource),
     widgetForSaveSource(new QWidget(this)),
     stack1SaveUi(new Ui::WidgetForSaveSource),
-    timer(new QTimer),
-    processMgmt(new ProcessMgmt(this)),
-    configDialog(new ConfigDialog(this))
+    timer(new QTimer(this))
 {
     ui->setupUi(this);
     stack2OpenUi->setupUi(groupBoxForLocation);
@@ -33,8 +36,14 @@ MainWindow::MainWindow(QWidget *parent) :
     setUpStackedLayout2();
     setUpStatusBar();
 
+    initMap();
+
     initConnection();
     readSetting();
+//for(auto iterator = mapPaths.begin(); iterator != mapPaths.end(); iterator++)
+//{
+//    qDebug() << "in construce MainWindow" << iterator.key() << "   " << iterator.value()->objectName();
+//}
     initUiState();
 
     ui->menuBar->hide();
@@ -46,16 +55,158 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    configDialog->proAlexNetPath = processMgmt->proAlexNetPath;
-    configDialog->proCRNNPath= processMgmt->proCRNNPath;
-    configDialog->proCTPNPath = processMgmt->proCTPNPath;
-    configDialog->proDeepLabPath = processMgmt->proDeepLabPath;
-    configDialog->proEASTPath = processMgmt->proEASTPath;
 
-    connect(this->processMgmt, &ProcessMgmt::proCrash, this, &MainWindow::crashHandle);
-    connect(this->processMgmt, &ProcessMgmt::proRecover, this, &MainWindow::recoverHandle);
-    ui->ledPlay->setIcon(QIcon(":/new/icon/green"));
 
+
+    daemonThread = new DaemonThread(this);
+    connect(ui->openServerPB, &QPushButton::clicked, this, &MainWindow::startDaemon);
+    connect(ui->closeServerPB, &QPushButton::clicked, this, &MainWindow::endDaemon);
+
+    connect(daemonThread->daemon, &Daemon::restartFailed, this, &MainWindow::daemonRstFailedHandler);//, Qt::BlockingQueuedConnection);
+    connect(daemonThread->daemon, &Daemon::noPythonEnv, this, &MainWindow::daeNoPyHandler);//, Qt::BlockingQueuedConnection);
+    connect(daemonThread->daemon, &Daemon::readyRead, this, &MainWindow::outToTE);//, Qt::BlockingQueuedConnection);
+    connect(daemonThread->daemon, &Daemon::startRun, this, &MainWindow::certainProStart);
+    connect(daemonThread->daemon, &Daemon::terminateRun, this, &MainWindow::certainProPause);
+
+    for(auto iterator = listPaths.begin(); iterator != listPaths.end(); iterator++)
+    {
+        connect(*iterator, &QPushButton::clicked, this, &MainWindow::lServerPBSlot);
+    }
+
+}
+
+void MainWindow::certainProStart(QString path)
+{
+for(auto iterator = mapPaths.begin(); iterator != mapPaths.end(); iterator++)
+{
+    qDebug() << mapComb[iterator.value()]->text->objectName();
+}
+    mapComb[mapPaths[path]]->green->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/green.png);"));
+    mapComb[mapPaths[path]]->red->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/gray.png);"));
+}
+
+void MainWindow::certainProPause(QString path)
+{
+    mapComb[mapPaths[path]]->green->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/gray.png);"));
+    mapComb[mapPaths[path]]->red->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/red.png);"));
+}
+
+void MainWindow::outToTE(QString serPath, QString message)
+{
+//for(auto iterator = mapPaths.begin(); iterator != mapPaths.end(); iterator++)
+//{
+//    qDebug() << mapComb[iterator.value()]->text->objectName();
+//}
+    QPlainTextEdit * temp = mapComb[mapPaths[serPath]]->text;
+    QTextCursor textCursor = temp->textCursor();
+    textCursor.insertText(message);
+}
+
+void MainWindow::daeNoPyHandler()
+{
+    myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告") ,QStringLiteral("无法启动python"),\
+                 QStringLiteral("请检查系统是否安装python并将python放入系统环境变量"));
+    qApp->quit();
+}
+
+void MainWindow::daemonRstFailedHandler(QString serverPath)
+{
+    myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告"), QStringLiteral("已尝试多次重启服务，均已失败，请确认服务路径正确并重启程序"),\
+                 QStringLiteral("出错服务为") + serverPath);
+    qApp->quit();
+}
+
+void MainWindow::startDaemon()
+{
+    for(auto iterator = mapComb.begin(); iterator != mapComb.end(); iterator++)
+    {
+        QPushButton * temp = iterator.key();
+        temp->setEnabled(false);
+    }
+    ui->openServerPB->setEnabled(false);
+    ui->clearPathsPB->setEnabled(false);
+    QStringList strListPaths;
+    /*之所以没有直接遍历mapPaths是因为，以下这种方式可以保证按顺序启动进程*/
+    for(auto iterator = listPaths.begin(); iterator != listPaths.end(); iterator++)
+    {
+        QString temp = (mapComb[*iterator])->path->text();
+        if(!temp.isEmpty())
+        {
+            strListPaths << temp;
+        }
+    }
+for(auto iterator = strListPaths.begin(); iterator != strListPaths.end(); iterator++)
+{
+    QString temp = *iterator;
+    std::cout <<temp.toStdString() << std::endl;
+}
+    /*采用这种方式调用是因为Daemon类成员函数非线程安全函数*/
+    QMetaObject::invokeMethod(daemonThread->daemon, "setProPaths", Qt::QueuedConnection, Q_ARG(QStringList, strListPaths));
+    //daemonThread->daemon->setProPaths(strListPaths);
+    QMetaObject::invokeMethod(daemonThread->daemon, "startAllPro", Qt::QueuedConnection);
+}
+
+void MainWindow::endDaemon()
+{
+    QMetaObject::invokeMethod(daemonThread->daemon, "closeAllPro", Qt::QueuedConnection);
+    for(auto iterator = mapComb.begin(); iterator != mapComb.end(); iterator++)
+    {
+        QPushButton * temp = iterator.key();
+        temp->setEnabled(true);
+    }
+    ui->openServerPB->setEnabled(true);
+    ui->clearPathsPB->setEnabled(true);
+}
+
+void MainWindow::lServerPBSlot()
+{
+//for(auto iterator = mapPaths.begin(); iterator != mapPaths.end(); iterator++)
+//{
+//    std::cout << iterator.key().toStdString() << std::endl;
+//}
+    QPushButton * pSender = static_cast<QPushButton *>(sender());
+
+    /*查找此按钮原来设置的路径*/
+    QString originalPath;
+    std::map<QString, QPushButton *> stdMap = mapPaths.toStdMap();
+    std::map<QString, QPushButton*>::iterator tarIterator = std::find_if(stdMap.begin(), stdMap.end(),
+        [pSender](std::map<QString, QPushButton *>::value_type item)
+    {
+        return item.second == pSender;
+    });
+
+    if (tarIterator!= stdMap.end())
+    {
+        originalPath = tarIterator->first;
+    }
+    else
+    {
+        originalPath = "";
+    }
+    QString tempPath = QFileDialog::getOpenFileName(this, QStringLiteral("打开"), originalPath,tr("py(*.py);;All(*.*)"));
+    if(!tempPath.isEmpty())
+    {
+        if(mapPaths.contains(tempPath))
+        {
+            myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告"), QStringLiteral("此服务已被添加"), QStringLiteral("请重新选择服务"));
+            return ;
+        }
+        if(originalPath != "")
+        {
+            mapPaths.remove(originalPath);
+        }
+        mapPaths.insert(tempPath, pSender);
+        mapComb[pSender]->path->setText(tempPath);
+
+
+        QSettings settings("YuCore", "num identify");
+        settings.setValue(pSender->objectName(), tempPath);
+    }
+
+//for(auto iterator = mapPaths.begin(); iterator != mapPaths.end(); iterator++)
+//{
+//    qDebug() << iterator.key() << "  " << iterator.value()->objectName();
+//}
 }
 
 MainWindow::~MainWindow()
@@ -66,6 +217,61 @@ MainWindow::~MainWindow()
     delete stack2SaveUi;
     delete stack1OpenUi;
     delete stack1SaveUi;
+    for(auto iterator = mapComb.begin(); iterator != mapComb.end(); iterator++)
+    {
+        delete iterator.value();
+    }
+}
+
+void MainWindow::initMap()
+{
+    Comb * temp = new Comb;
+    temp->text = ui->alexNetTE;
+    temp->green = ui->alexNetGLabel;
+    temp->red = ui->alexNetRLabel;
+    temp->path = ui->alexNetLE;
+    mapComb.insert(ui->alexNetPB, temp);
+    listPaths.push_back(ui->alexNetPB);
+
+    temp = new Comb;
+    temp->text = ui->cRNNTE;
+    temp->green = ui->cRNNGLabel;
+    temp->red = ui->cRNNRLabel;
+    temp->path = ui->cRNNLE;
+    mapComb.insert(ui->cRNNPB, temp);
+    listPaths.push_back(ui->cRNNPB);
+
+    temp = new Comb;
+    temp->text = ui->cTPNTE;
+    temp->green = ui->cTPNGLabel;
+    temp->red = ui->cTPNRLabel;
+    temp->path = ui->cTPNLE;
+    mapComb.insert(ui->cTPNPB, temp);
+    listPaths.push_back(ui->cTPNPB);
+
+    temp = new Comb;
+    temp->text = ui->deepLabTE;
+    temp->green = ui->deepLabGLabel;
+    temp->red = ui->deepLabRLabel;
+    temp->path = ui->deepLabLE;
+    mapComb.insert(ui->deepLabPB, temp);
+    listPaths.push_back(ui->deepLabPB);
+
+    temp = new Comb;
+    temp->text = ui->eASTTE;
+    temp->green = ui->eASTGLabel;
+    temp->red = ui->eASTRLabel;
+    temp->path = ui->eASTLE;
+    mapComb.insert(ui->eASTPB, temp);
+    listPaths.push_back(ui->eASTPB);
+
+    temp = new Comb;
+    temp->text = ui->otherTE;
+    temp->green = ui->otherGLabel;
+    temp->red = ui->otherRLabel;
+    temp->path = ui->otherLE;
+    mapComb.insert(ui->otherPB, temp);
+    listPaths.push_back(ui->otherPB);
 }
 
 void MainWindow::initUiState()
@@ -99,9 +305,6 @@ void MainWindow::initConnection()
     connect(stack2OpenUi->endPushButton, &QPushButton::clicked, this, &MainWindow::endButtonClickSlot);
 
     /*完善 serverConnectSlot serverDisconnectSlot*/
-
-    connect(this, &MainWindow::switchWidgeted, this, &MainWindow::switchWidgetSlot);
-
     connect(timer, &QTimer::timeout, this, &MainWindow::updatePixmap);
 
     //connect(&thread, &TransactionThread::allTransactionsDone, this, &MainWindow::allTransactionDone);
@@ -164,19 +367,18 @@ void MainWindow::setUpStackedLayout()
 
 void MainWindow::ltvClickedSlot()
 {
-    emit switchWidgeted(1);
+    ui->stackedWidget->setCurrentIndex(0);
+    stackedLayout->setCurrentIndex(1);
+    stackedLayout2->setCurrentIndex(1);
 }
 
 void MainWindow::rtvClickedSlot()
 {
-    emit switchWidgeted(0);
+    ui->stackedWidget->setCurrentIndex(0);
+    stackedLayout->setCurrentIndex(0);
+    stackedLayout2->setCurrentIndex(0);
 }
 
-void MainWindow::switchWidgetSlot(int index)
-{
-    stackedLayout->setCurrentIndex(index);
-    stackedLayout2->setCurrentIndex(index);
-}
 
 
 bool MainWindow::serverConnectSlot()
@@ -239,7 +441,7 @@ bool MainWindow::saveSourceFileSlot()
 
 bool MainWindow::configSlot()
 {
-    this->configDialog->exec();
+    ui->stackedWidget->setCurrentIndex(1);
     return true;
 }
 
@@ -445,12 +647,17 @@ void MainWindow::readSetting()
     qCInfo(QLoggingCategory("custom")) << QString("fileDialogPath is %1.").arg(fileDialogPath);
     saveSource = settings.value("saveSource", false).toBool();
     saveResult = settings.value("saveResult", false).toBool();
-    processMgmt->proAlexNetPath = settings.value("proAlexNetPath", "").toString();
-    processMgmt->proCRNNPath = settings.value("proCRNNPath", "").toString();
-    processMgmt->proCTPNPath = settings.value("proCTPNPath", "").toString();
-    processMgmt->proDeepLabPath = settings.value("proDeepLabPath", "").toString();
-    processMgmt->proEASTPath = settings.value("proEASTPath", "").toString();
-
+    for(auto iterator = listPaths.begin(); iterator != listPaths.end(); iterator++)
+    {
+        QPushButton * pPB = *iterator;
+        QString temp = settings.value(pPB->objectName(), "").toString();
+qDebug() << "in readSetting " << temp << pPB->objectName();
+        if(temp != "")
+        {
+            mapPaths.insert(temp, pPB);
+            mapComb[pPB]->path->setText(temp);
+        }
+    }
 }
 
 void MainWindow::writeSetting()
@@ -463,38 +670,17 @@ void MainWindow::writeSetting()
 
 }
 
-void MainWindow::on_actionTurnOn_triggered()
+/*清除所有路径按键*/
+void MainWindow::on_clearPathsPB_clicked()
 {
-    processMgmt->proAlexNetPath = configDialog->proAlexNetPath;
-    processMgmt->proCRNNPath = configDialog->proCRNNPath;
-    processMgmt->proCTPNPath = configDialog->proCTPNPath;
-    processMgmt->proDeepLabPath = configDialog->proDeepLabPath;
-    processMgmt->proEASTPath = configDialog->proEASTPath;
-
-    if(processMgmt->proAlexNetPath.isEmpty() || processMgmt->proCRNNPath.isEmpty() || processMgmt->proCTPNPath.isEmpty() \
-            || processMgmt->proDeepLabPath.isEmpty() || processMgmt->proEASTPath.isEmpty())
+    mapPaths.clear();
+    for(auto iterator = mapComb.begin(); iterator != mapComb.end(); iterator++)
     {
-            myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告"), QStringLiteral("本地服务路径为空！"));
-            return;
-
+        Comb * temp = iterator.value();
+        temp->path->clear();
+        temp->text->clear();
+        QPushButton * pB = iterator.key();
+        QSettings settings("YuCore", "num identify");
+        settings.setValue(pB->objectName(), "");
     }
-
-    processMgmt->startProcess();
-}
-
-void MainWindow::on_actionTurnOff_triggered()
-{
-    processMgmt->closeAllProcess();
-}
-
-void MainWindow::crashHandle(QString& /*message*/)
-{
-    QIcon icon("./images/red.ico");
-    ui->ledPlay->setIcon(icon);
-}
-
-void MainWindow::recoverHandle()
-{
-    QIcon icon("./images/green.ico");
-    ui->ledPlay->setIcon(icon);
 }
