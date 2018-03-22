@@ -19,7 +19,9 @@ SOURCES += main.cpp\
     camera.cpp \
     log.cpp \
     mymessagebox.cpp \
-    transactionthread.cpp
+    transactionthread.cpp \
+    daemon.cpp \
+    daemonthread.cpp
 
 HEADERS  += mainwindow.h \
     camera.h \
@@ -27,10 +29,13 @@ HEADERS  += mainwindow.h \
     common.h \
     log.h \
     mymessagebox.h \
-    transactionthread.h
+    transactionthread.h \
+    daemon.h \
+    daemonthread.h
 
 RESOURCES += \
-    res.qrc
+    res.qrc \
+    resaction.qrc
 
 FORMS += \
     groupboxforlocation.ui \

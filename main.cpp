@@ -1,8 +1,9 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "log.h"
 #include <QApplication>
 #include <QSize>
+#include "daemon.h"
 
 void outputMessage(QtMsgType, const QMessageLogContext &, const QString &);
 
@@ -16,7 +17,7 @@ int main(int argc, char *argv[])
     //qDebug("hello");
     //qCDebug(category) << "hello";
 
-    logInit();
+    //logInit();
     MainWindow w;
     w.show();
     w.initPixmapLabelSize();
