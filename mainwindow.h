@@ -5,7 +5,6 @@
 #include <QSize>
 #include "transactionthread.h"
 #include "camera.h"
-#include "configdialog.h"
 #include <QStringList>
 #include <QMap>
 #include <QString>

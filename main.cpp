@@ -3,7 +3,6 @@
 #include "log.h"
 #include <QApplication>
 #include <QSize>
-#include "configdialog.h"
 #include "daemon.h"
 
 void outputMessage(QtMsgType, const QMessageLogContext &, const QString &);
