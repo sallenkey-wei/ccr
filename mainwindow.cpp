@@ -13,6 +13,7 @@
 #include <map>
 #include <algorithm>
 #include <iostream>
+#include <QScrollBar>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -99,7 +100,13 @@ void MainWindow::outToTE(QString serPath, QString message)
 //}
     QPlainTextEdit * temp = mapComb[mapPaths[serPath]]->text;
     QTextCursor textCursor = temp->textCursor();
+    textCursor.movePosition(QTextCursor::End);
     textCursor.insertText(message);
+    QScrollBar * scrollBar = temp->verticalScrollBar();
+    if(scrollBar)
+    {
+        scrollBar->setSliderPosition(scrollBar->maximum());
+    }
 }
 
 void MainWindow::daeNoPyHandler()

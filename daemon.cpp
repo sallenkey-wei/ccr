@@ -58,7 +58,7 @@ void Daemon::proExitHandler(/*int exitCode, QProcess::ExitStatus exitStatus*/)
     }
     else
     {
-        senderPro->start("python", QStringList() << proMap[senderPro]);
+        senderPro->start("python", QStringList() << "-u" << proMap[senderPro]);
         bool rstSuccess = senderPro->waitForStarted(30000);
         if(!rstSuccess)
         {
@@ -80,13 +80,12 @@ void Daemon::startAllPro()
     {
         QProcess * temp = *iterator;
         connect(temp, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &Daemon::proExitHandler);
-        temp->start("python", QStringList() << proMap[temp]);
+        temp->start("python", QStringList() << "-u" << proMap[temp]);
         bool rstSuccess = temp->waitForStarted(30000);
         if(!rstSuccess)
         {
             emit noPythonEnv();
             disconnect(temp, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &Daemon::proExitHandler);
-        temp->start("python", QStringList() << proMap[temp]);
         }
         else
         {
