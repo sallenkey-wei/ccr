@@ -48,3 +48,5 @@ FORMS += \
 
 INCLUDEPATH += $$PWD/include
 DEPENDPATH += $$PWD/include
+#这一行保证release模式下日志输出正常
+DEFINES += QT_MESSAGELOGCONTEXT

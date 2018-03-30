@@ -78,16 +78,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::certainProStart(QString path)
 {
-for(auto iterator = mapPaths.begin(); iterator != mapPaths.end(); iterator++)
-{
-    qDebug() << mapComb[iterator.value()]->text->objectName();
-}
+//for(auto iterator = mapPaths.begin(); iterator != mapPaths.end(); iterator++)
+//{
+//    qDebug() << mapComb[iterator.value()]->text->objectName();
+//}
+    qInfo() << path <<" start";
     mapComb[mapPaths[path]]->green->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/green.png);"));
     mapComb[mapPaths[path]]->red->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/gray.png);"));
 }
 
 void MainWindow::certainProPause(QString path)
 {
+    qInfo() << path << " pause";
     mapComb[mapPaths[path]]->green->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/gray.png);"));
     mapComb[mapPaths[path]]->red->setStyleSheet(QStringLiteral("image: url(:/new/icon/images/red.png);"));
 }
@@ -98,6 +100,7 @@ void MainWindow::outToTE(QString serPath, QString message)
 //{
 //    qDebug() << mapComb[iterator.value()]->text->objectName();
 //}
+    qInfo() << " serPath print a message: " << message;
     QPlainTextEdit * temp = mapComb[mapPaths[serPath]]->text;
     QTextCursor textCursor = temp->textCursor();
     textCursor.movePosition(QTextCursor::End);
@@ -111,6 +114,7 @@ void MainWindow::outToTE(QString serPath, QString message)
 
 void MainWindow::daeNoPyHandler()
 {
+    qCritical() << " no Python Environment, please install python";
     myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告") ,QStringLiteral("无法启动python"),\
                  QStringLiteral("请检查系统是否安装python并将python放入系统环境变量"));
     qApp->quit();
@@ -118,6 +122,7 @@ void MainWindow::daeNoPyHandler()
 
 void MainWindow::daemonRstFailedHandler(QString serverPath)
 {
+    qCritical() << serverPath << " can not restart, qApp will exit";
     myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告"), QStringLiteral("已尝试多次重启服务，均已失败，请确认服务路径正确并重启程序"),\
                  QStringLiteral("出错服务为") + serverPath);
     qApp->quit();
@@ -125,6 +130,7 @@ void MainWindow::daemonRstFailedHandler(QString serverPath)
 
 void MainWindow::startDaemon()
 {
+    qInfo() << "start all the server";
     for(auto iterator = mapComb.begin(); iterator != mapComb.end(); iterator++)
     {
         QPushButton * temp = iterator.key();
@@ -142,11 +148,11 @@ void MainWindow::startDaemon()
             strListPaths << temp;
         }
     }
-for(auto iterator = strListPaths.begin(); iterator != strListPaths.end(); iterator++)
-{
-    QString temp = *iterator;
-    std::cout <<temp.toStdString() << std::endl;
-}
+//for(auto iterator = strListPaths.begin(); iterator != strListPaths.end(); iterator++)
+//{
+//    QString temp = *iterator;
+//    std::cout <<temp.toStdString() << std::endl;
+//}
     /*采用这种方式调用是因为Daemon类成员函数非线程安全函数*/
     QMetaObject::invokeMethod(daemonThread->daemon, "setProPaths", Qt::QueuedConnection, Q_ARG(QStringList, strListPaths));
     //daemonThread->daemon->setProPaths(strListPaths);
@@ -155,6 +161,7 @@ for(auto iterator = strListPaths.begin(); iterator != strListPaths.end(); iterat
 
 void MainWindow::endDaemon()
 {
+    qInfo() << "close all the server";
     QMetaObject::invokeMethod(daemonThread->daemon, "closeAllPro", Qt::QueuedConnection);
     for(auto iterator = mapComb.begin(); iterator != mapComb.end(); iterator++)
     {
@@ -193,6 +200,7 @@ void MainWindow::lServerPBSlot()
     QString tempPath = QFileDialog::getOpenFileName(this, QStringLiteral("打开"), originalPath,tr("py(*.py);;All(*.*)"));
     if(!tempPath.isEmpty())
     {
+        qInfo() << tempPath << " is choosed" ;
         if(mapPaths.contains(tempPath))
         {
             myMessageBox(this, QMessageBox::Warning, QStringLiteral("警告"), QStringLiteral("此服务已被添加"), QStringLiteral("请重新选择服务"));
@@ -658,7 +666,7 @@ void MainWindow::readSetting()
     {
         QPushButton * pPB = *iterator;
         QString temp = settings.value(pPB->objectName(), "").toString();
-qDebug() << "in readSetting " << temp << pPB->objectName();
+//qDebug() << "in readSetting " << temp << pPB->objectName();
         if(temp != "")
         {
             mapPaths.insert(temp, pPB);
@@ -680,6 +688,7 @@ void MainWindow::writeSetting()
 /*清除所有路径按键*/
 void MainWindow::on_clearPathsPB_clicked()
 {
+    qInfo() << "clear all server paths";
     mapPaths.clear();
     for(auto iterator = mapComb.begin(); iterator != mapComb.end(); iterator++)
     {
