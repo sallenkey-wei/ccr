@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     //qDebug("hello");
     //qCDebug(category) << "hello";
 
-    //logInit();
+    logInit();
     MainWindow w;
     w.show();
     w.initPixmapLabelSize();
