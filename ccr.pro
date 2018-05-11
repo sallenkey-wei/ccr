@@ -11,8 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ccr
 TEMPLATE = app
 
-INCLUDEPATH += D:/opencv/opencv3.1.0/build/include
-LIBS += -LD:/opencv/opencv3.1.0/build/x64/vc14/lib -lopencv_world310
+#INCLUDEPATH += D:/opencv/opencv3.1.0/build/include
+#LIBS += -LD:/opencv/opencv3.1.0/build/x64/vc14/lib -lopencv_world310
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -50,3 +50,9 @@ INCLUDEPATH += $$PWD/include
 DEPENDPATH += $$PWD/include
 #这一行保证release模式下日志输出正常
 DEFINES += QT_MESSAGELOGCONTEXT
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/thirdparty/opencv3.1.0/lib/ -lopencv_world310
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/thirdparty/opencv3.1.0/lib/ -lopencv_world310d
+
+INCLUDEPATH += $$PWD/thirdparty/opencv3.1.0/include
+DEPENDPATH += $$PWD/thirdparty/opencv3.1.0/include
